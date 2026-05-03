@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions, Image } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -47,7 +47,7 @@ export default function ReaderScreen() {
     };
   }, []);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isPlaying) {
@@ -86,18 +86,18 @@ export default function ReaderScreen() {
   // PLAYING STATE
   if (isPlaying) {
     return (
-      <Pressable style={styles.playingContainer} onPress={togglePlay}>
+      <Pressable className="flex-1 items-center justify-center bg-black" onPress={togglePlay}>
         <StatusBar hidden />
-        <View style={styles.wordContainer}>
-            <View style={styles.leftPart}>
-              <Text style={styles.wordText}>{orpData.left}</Text>
+        <View className="flex-row w-full items-center justify-center">
+            <View className="flex-1 items-end">
+              <Text className="text-[50px] font-bold text-[#e2e2e2]">{orpData.left}</Text>
             </View>
-            <View style={styles.orpPart}>
-              <Text style={[styles.wordText, styles.orpText]}>{orpData.orp}</Text>
-              <View style={styles.orpPip} />
+            <View className="relative items-center">
+              <Text className="text-[50px] font-bold text-primary">{orpData.orp}</Text>
+              <View className="absolute -bottom-4 h-1 w-1 rounded-full bg-[#007AFF]" />
             </View>
-            <View style={styles.rightPart}>
-              <Text style={styles.wordText}>{orpData.right}</Text>
+            <View className="flex-1 items-start">
+              <Text className="text-[50px] font-bold text-[#e2e2e2]">{orpData.right}</Text>
             </View>
         </View>
       </Pressable>
@@ -106,52 +106,60 @@ export default function ReaderScreen() {
 
   // PAUSED STATE
   return (
-    <View style={styles.pausedContainer}>
+    <View className="flex-1 bg-[#131313]">
       <StatusBar hidden />
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Absolute Back Button */}
-      <Pressable onPress={() => router.back()} style={styles.backButton}>
+      <Pressable onPress={() => router.back()} className="absolute left-6 top-6 z-50 p-2.5">
         <Icon name="chevron.left" materialIcon={{ name: 'arrow-back' }} color="#c1c6d7" size={32} />
       </Pressable>
 
-      <View style={styles.mainContent}>
+      <View className="flex-1 flex-row items-center justify-center gap-16 px-12 pt-4">
         {/* Left Side: RSVP Text Area */}
-        <View style={styles.textArea}>
-          <View style={styles.contextContainer}>
-            <Text style={styles.contextText}>
+        <View className="flex-1 max-w-[600px] flex-col items-center justify-center">
+          <View className="flex-row flex-wrap justify-center opacity-40">
+            <Text className="text-lg leading-[28px] text-[#c1c6d7]">
                 {words.slice(Math.max(0, currentIndex - 5), currentIndex).join(' ')}
             </Text>
           </View>
           
-          <View style={styles.pausedWordContainer}>
-            {hasPreviousWord && <View style={styles.verticalLineTop} />}
-            <View style={styles.verticalLineBottom} />
-            <View style={styles.leftPart}>
-              <Text style={styles.pausedWordText}>{orpData.left}</Text>
+          <View className="relative my-5 flex-row w-full items-center justify-center py-4">
+            {hasPreviousWord && <View className="absolute bottom-1/2 left-1/2 top-0 mb-10 w-[1px] bg-[#353535] opacity-30" />}
+            <View className="absolute bottom-0 left-1/2 top-1/2 mt-10 w-[1px] bg-[#353535] opacity-30" />
+            <View className="flex-1 items-end">
+              <Text className="text-[64px] font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.left}</Text>
             </View>
-            <View style={styles.orpPart}>
-              {hasPreviousWord && <View style={styles.orpPipTop} />}
-              <Text style={[styles.pausedWordText, styles.orpText]}>{orpData.orp}</Text>
-              <View style={styles.orpPipBottom} />
+            <View className="relative items-center">
+              {hasPreviousWord && (
+                <View 
+                  className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary" 
+                  style={{ shadowColor: 'rgba(173,198,255,0.8)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8, elevation: 5 }} 
+                />
+              )}
+              <Text className="text-[64px] font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.orp}</Text>
+              <View 
+                className="absolute -bottom-6 h-1.5 w-1.5 rounded-full bg-primary" 
+                style={{ shadowColor: 'rgba(173,198,255,0.8)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8, elevation: 5 }} 
+              />
             </View>
-            <View style={styles.rightPart}>
-              <Text style={styles.pausedWordText}>{orpData.right}</Text>
+            <View className="flex-1 items-start">
+              <Text className="text-[64px] font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.right}</Text>
             </View>
           </View>
 
-          <View style={styles.contextContainer}>
-            <Text style={styles.contextText}>
+          <View className="flex-row flex-wrap justify-center opacity-40">
+            <Text className="text-lg leading-[28px] text-[#c1c6d7]">
                 {words.slice(currentIndex + 1, currentIndex + 6).join(' ')}
             </Text>
           </View>
         </View>
 
         {/* Right Side: Controls Cluster */}
-        <View style={styles.controlsArea}>
-          <View style={styles.sliderContainer}>
+        <View className="flex-1 max-w-[400px] flex-col items-center justify-center gap-10">
+          <View className="flex-row w-full items-center">
             <Icon name="timer" materialIcon={{ name: 'speed' }} size={20} color="#8b90a0" />
-            <View style={{ flex: 1, marginHorizontal: 16 }}>
+            <View className="mx-4 flex-1">
               <Slider
                 value={wpm}
                 onValueChange={(newWpm) => {
@@ -163,23 +171,27 @@ export default function ReaderScreen() {
                 step={10}
               />
             </View>
-            <View style={styles.wpmDisplay}>
-              <Text style={styles.wpmValue}>{wpm}</Text>
-              <Text style={styles.wpmLabel}>WPM</Text>
+            <View className="min-w-[48px] flex-col items-end">
+              <Text className="text-xs font-medium tracking-[0.6px] text-primary">{wpm}</Text>
+              <Text className="text-[9px] font-medium tracking-[0.6px] text-[#8b90a0]">WPM</Text>
             </View>
           </View>
 
-          <View style={styles.playbackControls}>
-            <Pressable style={styles.secondaryButton} onPress={seekBackward}>
-              <Icon name="gobackward.10" materialIcon={{ name: 'replay-10' }} size={28} color="#c1c6d7" />
+          <View className="flex-row items-center justify-center gap-12">
+            <Pressable className="rounded-full p-3" onPress={seekBackward}>
+              <Icon name={'gobackward.10' as any} materialIcon={{ name: 'replay-10' }} size={28} color="#c1c6d7" />
             </Pressable>
             
-            <Pressable style={styles.playButton} onPress={togglePlay}>
+            <Pressable 
+              className="h-20 w-20 items-center justify-center rounded-full bg-primary" 
+              style={{ shadowColor: 'rgba(173,198,255,0.3)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 30, elevation: 10 }}
+              onPress={togglePlay}
+            >
               <Icon name="play.fill" materialIcon={{ name: 'play-arrow' }} size={36} color="#002e69" />
             </Pressable>
             
-            <Pressable style={styles.secondaryButton} onPress={seekForward}>
-              <Icon name="goforward.10" materialIcon={{ name: 'forward-10' }} size={28} color="#c1c6d7" />
+            <Pressable className="rounded-full p-3" onPress={seekForward}>
+              <Icon name={'goforward.10' as any} materialIcon={{ name: 'forward-10' }} size={28} color="#c1c6d7" />
             </Pressable>
           </View>
         </View>
@@ -187,200 +199,3 @@ export default function ReaderScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  playingContainer: {
-    flex: 1,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pausedContainer: {
-    flex: 1,
-    backgroundColor: '#131313',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 24,
-    left: 24,
-    zIndex: 50,
-    padding: 10,
-  },
-  mainContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 48,
-    paddingTop: 16,
-    gap: 64,
-  },
-  textArea: {
-    flex: 1,
-    maxWidth: 600,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  controlsArea: {
-    flex: 1,
-    maxWidth: 400,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 40,
-  },
-  wordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  pausedWordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    marginVertical: 20,
-    position: 'relative',
-    paddingVertical: 16,
-  },
-  verticalLineTop: {
-    position: 'absolute',
-    top: 0,
-    bottom: '50%',
-    left: '50%',
-    width: 1,
-    backgroundColor: '#353535',
-    opacity: 0.3,
-    marginBottom: 40,
-  },
-  verticalLineBottom: {
-    position: 'absolute',
-    top: '50%',
-    bottom: 0,
-    left: '50%',
-    width: 1,
-    backgroundColor: '#353535',
-    opacity: 0.3,
-    marginTop: 40,
-  },
-  leftPart: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  orpPart: {
-    alignItems: 'center',
-    position: 'relative',
-  },
-  rightPart: {
-    flex: 1,
-    alignItems: 'flex-start',
-  },
-  wordText: {
-    color: '#e2e2e2',
-    fontSize: 50,
-    fontWeight: '700',
-  },
-  pausedWordText: {
-    color: '#adc6ff',
-    fontSize: 64,
-    fontWeight: '700',
-    textShadowColor: 'rgba(173, 198, 255, 0.15)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 40,
-  },
-  orpText: {
-    color: '#adc6ff',
-  },
-  orpPipTop: {
-    position: 'absolute',
-    top: -24,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#adc6ff',
-    shadowColor: 'rgba(173,198,255,0.8)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  orpPipBottom: {
-    position: 'absolute',
-    bottom: -24,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#adc6ff',
-    shadowColor: 'rgba(173,198,255,0.8)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  orpPip: {
-    position: 'absolute',
-    bottom: -16,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#007AFF',
-  },
-  contextContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    opacity: 0.4,
-  },
-  contextText: {
-    color: '#c1c6d7',
-    fontSize: 18,
-    lineHeight: 28,
-  },
-  sliderContainer: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  wpmDisplay: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    minWidth: 48,
-  },
-  wpmValue: {
-    color: '#adc6ff',
-    fontSize: 12,
-    fontWeight: '500',
-    letterSpacing: 0.6,
-  },
-  wpmLabel: {
-    color: '#8b90a0',
-    fontSize: 9,
-    fontWeight: '500',
-    letterSpacing: 0.6,
-  },
-  playbackControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 48,
-  },
-  secondaryButton: {
-    padding: 12,
-    borderRadius: 9999,
-  },
-  playButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#adc6ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: 'rgba(173,198,255,0.3)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 30,
-    elevation: 10,
-  },
-});
