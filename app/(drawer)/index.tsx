@@ -71,6 +71,7 @@ export default function Home() {
           {/* Grid */}
           <View className="flex-col gap-6 md:flex-row md:flex-wrap">
             {/* Card 1 */}
+            <Link href="/reader" asChild>
             <Pressable className="group min-h-[240px] flex-1 justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 md:min-w-[60%] active:opacity-80">
               <View className="mb-4 flex-row items-start justify-between">
                 <View className="flex-row items-center gap-2">
@@ -98,6 +99,7 @@ export default function Home() {
                 <View className="h-full w-[65%] rounded-full bg-[#007AFF]" />
               </View>
             </Pressable>
+            </Link>
 
             {/* Card 2 */}
             <Pressable className="group min-h-[240px] flex-1 justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 active:opacity-80">
