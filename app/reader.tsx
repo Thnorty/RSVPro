@@ -54,7 +54,6 @@ export default function ReaderScreen() {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
 
     return () => {
-      // Revert to portrait (or unlock) when leaving
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
     };
   }, []);
@@ -102,6 +101,17 @@ export default function ReaderScreen() {
     );
   }
 
+  if (book.status === 'processing') {
+    return (
+      <View className="flex-1 items-center justify-center bg-black">
+        <Text className="text-white">Processing book...</Text>
+        <Pressable onPress={() => router.back()} className="mt-4 rounded-lg bg-primary px-4 py-2">
+          <Text className="text-white">Go Back</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   const currentWord = words[currentIndex] || '';
   const orpData = getORP(currentWord);
   const hasPreviousWord = currentIndex > 0;
@@ -113,14 +123,14 @@ export default function ReaderScreen() {
         <StatusBar hidden />
         <View className="flex-row w-full items-center justify-center">
             <View className="flex-1 items-end">
-              <Text className="text-[50px] font-bold text-[#e2e2e2]">{orpData.left}</Text>
+              <Text className="text-[50px] font-bold text-[#e2e2e2]" numberOfLines={1}>{orpData.left}</Text>
             </View>
             <View className="relative items-center">
-              <Text className="text-[50px] font-bold text-primary">{orpData.orp}</Text>
+              <Text className="text-[50px] font-bold text-primary" numberOfLines={1}>{orpData.orp}</Text>
               <View className="absolute -bottom-4 h-1 w-1 rounded-full bg-[#007AFF]" />
             </View>
             <View className="flex-1 items-start">
-              <Text className="text-[50px] font-bold text-[#e2e2e2]">{orpData.right}</Text>
+              <Text className="text-[50px] font-bold text-[#e2e2e2]" numberOfLines={1}>{orpData.right}</Text>
             </View>
         </View>
       </Pressable>
@@ -157,15 +167,15 @@ export default function ReaderScreen() {
             {hasPreviousWord && <View className="absolute bottom-1/2 left-1/2 top-0 mb-10 w-[1px] bg-[#353535] opacity-30" />}
             <View className="absolute bottom-0 left-1/2 top-1/2 mt-10 w-[1px] bg-[#353535] opacity-30" />
             <View className="flex-1 items-end">
-              <Text className="text-6xl font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.left}</Text>
+              <Text className="text-6xl font-bold text-primary" numberOfLines={1}>{orpData.left}</Text>
             </View>
             <View className="relative items-center">
-              {hasPreviousWord && <View className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary shadow-lg shadow-primary/80 elevation-5" />}
-              <Text className="text-6xl font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.orp}</Text>
+              {hasPreviousWord && <View className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary shadow-primary/80 elevation-5" />}
+              <Text className="text-6xl font-bold text-primary" numberOfLines={1}>{orpData.orp}</Text>
               <View className="absolute -bottom-6 h-1.5 w-1.5 rounded-full bg-primary shadow-lg shadow-primary/80 elevation-5" />
             </View>
             <View className="flex-1 items-start">
-              <Text className="text-6xl font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.right}</Text>
+              <Text className="text-6xl font-bold text-primary" numberOfLines={1}>{orpData.right}</Text>
             </View>
           </View>
 

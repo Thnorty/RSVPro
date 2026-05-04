@@ -4,10 +4,12 @@ import { View, Image, ScrollView, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 import { Text } from '@/components/nativewindui/Text';
 import { Icon } from '@/components/nativewindui/Icon';
 import { Sheet } from '@/components/nativewindui/Sheet';
+import { ActivityIndicator } from '@/components/nativewindui/ActivityIndicator';
 import { useStore } from '@/store/store';
 import { extractTextFromPDF } from '@/lib/parsePDF';
 import { extractTextFromEPUB } from '@/lib/parseEPUB';
@@ -16,7 +18,7 @@ export default function Home() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [isAddSheetOpen, setIsAddSheetOpen] = React.useState(false);
-  const { books, addBook } = useStore();
+  const { books, addBook, updateBook } = useStore();
 
   const handlePickDocument = async () => {
     try {
@@ -37,33 +39,58 @@ export default function Home() {
       const isEpub = file.name.toLowerCase().endsWith('.epub');
       const isTxt = file.name.toLowerCase().endsWith('.txt');
 
+      const newBookId = Math.random().toString(36).substring(7);
+
       if (isTxt) {
         content = await pickedFile.text();
-      } else if (isPdf) {
-        Alert.alert('Processing', 'Extracting text from PDF...');
-        const buffer = await pickedFile.arrayBuffer();
-        content = await extractTextFromPDF(buffer);
-      } else if (isEpub) {
-        Alert.alert('Processing', 'Extracting text from EPUB...');
-        const buffer = await pickedFile.arrayBuffer();
-        content = await extractTextFromEPUB(buffer);
+        const totalWords = content.split(/\s+/).filter(Boolean).length;
+        const newBook = {
+          id: newBookId,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          content: content,
+          progress: 0,
+          totalWords,
+          type: 'book' as const,
+          dateAdded: Date.now(),
+          status: 'ready' as const,
+        };
+        addBook(newBook);
+        // Automatically navigate to the reader for simple text files since it is fast
+        router.push({ pathname: '/reader', params: { bookId: newBook.id } });
+      } else if (isPdf || isEpub) {
+        const newBook = {
+          id: newBookId,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          content: '',
+          progress: 0,
+          totalWords: 1,
+          type: 'book' as const,
+          dateAdded: Date.now(),
+          status: 'processing' as const,
+        };
+        addBook(newBook);
+
+        // Run extraction asynchronously without awaiting
+        (async () => {
+          try {
+            let extractedContent = '';
+            if (isPdf) {
+              extractedContent = await extractTextFromPDF(file.uri);
+            } else if (isEpub) {
+              const buffer = await pickedFile.arrayBuffer();
+              extractedContent = await extractTextFromEPUB(buffer);
+            }
+            const totalWords = extractedContent.split(/\s+/).filter(Boolean).length;
+            updateBook(newBookId, { content: extractedContent, status: 'ready', totalWords });
+          } catch (error) {
+            console.error('Background processing error:', error);
+            updateBook(newBookId, { status: 'error' });
+          }
+        })();
       } else {
         Alert.alert('Error', 'Unsupported file type selection.');
         return;
       }
-
-      const newBook = {
-        id: Math.random().toString(36).substring(7),
-        title: file.name.replace(/\.[^/.]+$/, ""),
-        content: content,
-        progress: 0,
-        type: 'book' as const,
-        dateAdded: Date.now(),
-      };
-
-      addBook(newBook);
-      // Automatically navigate to the reader for the new book
-      router.push({ pathname: '/reader', params: { bookId: newBook.id } });
       
     } catch (error) {
       console.error('Error picking document', error);
@@ -106,8 +133,8 @@ export default function Home() {
         {/* Main Content Area */}
         <ScrollView
           contentContainerStyle={{ paddingBottom: 120 }}
-          className="flex-1 px-6 pt-8 md:px-16">
-          <View className="mb-8 flex-row items-end justify-between">
+          className="flex-1 px-6 pt-8">
+          <View className="mb-8">
             <View>
               <Text variant="largeTitle" className="mb-2 text-white">
                 Library
@@ -116,8 +143,8 @@ export default function Home() {
                 Continue where you left off.
               </Text>
             </View>
-            <View className="hidden flex-row gap-2 md:flex">
-              <Pressable className="rounded-full border border-[#2C2C2E] px-4 py-2 hover:border-primary active:opacity-70">
+            <View className="flex-row gap-2 mt-6">
+              <Pressable className="rounded-full border border-[#2C2C2E] px-4 py-2 hover:border-primary active:opacity-70 bg-[#1C1C1E]">
                 <Text variant="caption1" className="text-white">
                   All
                 </Text>
@@ -136,7 +163,7 @@ export default function Home() {
           </View>
 
           {/* Grid */}
-          <View className="flex-col gap-6 md:flex-row md:flex-wrap">
+          <View className="flex-col gap-6">
             {books.length === 0 ? (
               <View className="flex-1 items-center justify-center py-20 opacity-50">
                 <Icon name={'books.vertical' as any} materialIcon={{ name: 'library-books' }} size={48} color="#8b90a0" />
@@ -148,9 +175,16 @@ export default function Home() {
                 </Text>
               </View>
             ) : (
-              books.map((book) => (
-                <Link key={book.id} href={{ pathname: '/reader', params: { bookId: book.id } }} asChild>
-                  <Pressable className="group min-h-[240px] w-full md:w-[48%] lg:w-[31%] flex-col justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 active:opacity-80">
+              books.map((book) => {
+                const isProcessing = book.status === 'processing';
+                const isError = book.status === 'error';
+                const percentage = Math.min(100, (book.progress / (book.totalWords || Math.max(1, Math.ceil((book.content?.length || 0) / 5.5)))) * 100);
+                
+                const CardContent = (
+                  <Pressable 
+                    className={`group w-full flex-col justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-5 active:opacity-80 ${isProcessing ? 'opacity-50' : ''}`}
+                    disabled={isProcessing}
+                  >
                     <View className="mb-4 flex-row items-start justify-between">
                       <View className="flex-row items-center gap-2">
                         <Icon name={book.type === 'book' ? 'book' : 'doc'} size={16} color="#8b90a0" />
@@ -158,6 +192,8 @@ export default function Home() {
                           {book.type}
                         </Text>
                       </View>
+                      {isProcessing && <ActivityIndicator size="small" />}
+                      {isError && <Icon name={'exclamationmark.triangle.fill' as any} materialIcon={{ name: 'error' }} size={16} color="#FF3B30" />}
                     </View>
                     <View>
                       <Text variant="title3" className="mb-2 text-white" numberOfLines={2}>
@@ -169,15 +205,47 @@ export default function Home() {
                         </Text>
                       )}
                     </View>
-                    <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
-                      <View 
-                        className="h-full bg-[#007AFF]" 
-                        style={{ width: `${Math.min(100, (book.progress / (book.content.split(/\s+/).length || 1)) * 100)}%` }} 
-                      />
-                    </View>
+                    {!isProcessing && !isError && (
+                      <View>
+                        <View className="mb-1.5 flex-row justify-between items-center">
+                          <Text variant="caption2" className="text-muted-foreground">
+                            Added {new Date(book.dateAdded || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </Text>
+                          <Text variant="caption2" className="text-[#007AFF] font-medium">
+                            {Math.round(percentage)}%
+                          </Text>
+                        </View>
+                        <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
+                          <View 
+                            className="h-full bg-[#007AFF]" 
+                            style={{ width: `${percentage}%` }} 
+                          />
+                        </View>
+                      </View>
+                    )}
+                    {isProcessing && (
+                      <View className="mt-4">
+                        <Text variant="caption1" className="text-muted-foreground">Processing...</Text>
+                      </View>
+                    )}
+                    {isError && (
+                      <View className="mt-4">
+                        <Text variant="caption1" className="text-[#FF3B30]">Failed to process document</Text>
+                      </View>
+                    )}
                   </Pressable>
-                </Link>
-              ))
+                );
+
+                if (isProcessing || isError) {
+                  return <React.Fragment key={book.id}>{CardContent}</React.Fragment>;
+                }
+
+                return (
+                  <Link key={book.id} href={{ pathname: '/reader', params: { bookId: book.id } }} asChild>
+                    {CardContent}
+                  </Link>
+                );
+              })
             )}
           </View>
         </ScrollView>
