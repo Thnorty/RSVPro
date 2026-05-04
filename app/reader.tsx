@@ -25,6 +25,7 @@ function getORP(word: string) {
 
 export default function ReaderScreen() {
   const { bookId } = useLocalSearchParams<{ bookId: string }>();
+  const [isReady, setIsReady] = useState(false);
   const books = useStore((state) => state.books);
   const updateBookProgress = useStore((state) => state.updateBookProgress);
   const book = books.find((b) => b.id === bookId);
@@ -51,7 +52,13 @@ export default function ReaderScreen() {
 
   useEffect(() => {
     // Lock to landscape when opening the reader
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    const lockOrientation = async () => {
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+      // Small delay to ensure the OS layout has stabilized in landscape
+      setTimeout(() => setIsReady(true), 50);
+    };
+
+    lockOrientation();
 
     return () => {
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
@@ -89,6 +96,10 @@ export default function ReaderScreen() {
   const seekForward = () => {
     setCurrentIndex((prev) => Math.min(words.length - 1, prev + 10));
   };
+
+  if (!isReady) {
+    return <View className="flex-1 bg-black" />;
+  }
 
   if (!book) {
     return (
@@ -139,7 +150,7 @@ export default function ReaderScreen() {
 
   // PAUSED STATE
   return (
-    <View className="flex-1 bg-[#131313]">
+    <View className="flex-1 bg-black">
       <StatusBar hidden />
       <Stack.Screen options={{ headerShown: false }} />
       {/* Absolute Header Info */}
