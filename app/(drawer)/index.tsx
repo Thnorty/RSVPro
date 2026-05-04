@@ -1,13 +1,80 @@
-import { Stack, Link } from 'expo-router';
+import { Stack, Link, useRouter } from 'expo-router';
 import * as React from 'react';
-import { View, Image, ScrollView, Pressable } from 'react-native';
+import { View, Image, ScrollView, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
 
 import { Text } from '@/components/nativewindui/Text';
 import { Icon } from '@/components/nativewindui/Icon';
+import { Sheet } from '@/components/nativewindui/Sheet';
+import { useStore } from '@/store/store';
+import { extractTextFromPDF } from '@/lib/parsePDF';
+import { extractTextFromEPUB } from '@/lib/parseEPUB';
 
 export default function Home() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [isAddSheetOpen, setIsAddSheetOpen] = React.useState(false);
+  const { books, addBook } = useStore();
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'text/plain', 'application/epub+zip'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+      setIsAddSheetOpen(false);
+
+      let content = '';
+
+      const pickedFile = new File(file.uri);
+      const isPdf = file.name.toLowerCase().endsWith('.pdf');
+      const isEpub = file.name.toLowerCase().endsWith('.epub');
+      const isTxt = file.name.toLowerCase().endsWith('.txt');
+
+      if (isTxt) {
+        content = await pickedFile.text();
+      } else if (isPdf) {
+        Alert.alert('Processing', 'Extracting text from PDF...');
+        const buffer = await pickedFile.arrayBuffer();
+        content = await extractTextFromPDF(buffer);
+      } else if (isEpub) {
+        Alert.alert('Processing', 'Extracting text from EPUB...');
+        const buffer = await pickedFile.arrayBuffer();
+        content = await extractTextFromEPUB(buffer);
+      } else {
+        Alert.alert('Error', 'Unsupported file type selection.');
+        return;
+      }
+
+      const newBook = {
+        id: Math.random().toString(36).substring(7),
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        content: content,
+        progress: 0,
+        type: 'book' as const,
+        dateAdded: Date.now(),
+      };
+
+      addBook(newBook);
+      // Automatically navigate to the reader for the new book
+      router.push({ pathname: '/reader', params: { bookId: newBook.id } });
+      
+    } catch (error) {
+      console.error('Error picking document', error);
+      Alert.alert('Error', 'Failed to pick or read document');
+    }
+  };
+
+  const handlePlaceholderAction = (action: string) => {
+    setIsAddSheetOpen(false);
+    console.log(`Action selected: ${action}, not yet implemented.`);
+  };
 
   return (
     <>
@@ -70,101 +137,107 @@ export default function Home() {
 
           {/* Grid */}
           <View className="flex-col gap-6 md:flex-row md:flex-wrap">
-            {/* Card 1 */}
-            <Link href="/reader" asChild>
-            <Pressable className="group min-h-[240px] flex-1 justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 md:min-w-[60%] active:opacity-80">
-              <View className="mb-4 flex-row items-start justify-between">
-                <View className="flex-row items-center gap-2">
-                  <Icon name="book" size={16} color="#8b90a0" />
-                  <Text variant="caption1" className="tracking-wider text-muted-foreground">
-                    BOOK
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2 rounded-full border border-[#2C2C2E] bg-[#121212] px-3 py-1">
-                  <View className="h-1.5 w-1.5 rounded-full bg-[#007AFF]" />
-                  <Text variant="caption1" className="text-white">
-                    12 min left
-                  </Text>
-                </View>
-              </View>
-              <View>
-                <Text variant="title2" className="mb-2 text-white">
-                  The Design of Everyday Things
+            {books.length === 0 ? (
+              <View className="flex-1 items-center justify-center py-20 opacity-50">
+                <Icon name={'books.vertical' as any} materialIcon={{ name: 'library-books' }} size={48} color="#8b90a0" />
+                <Text variant="body" className="mt-4 text-muted-foreground text-center">
+                  Your library is empty.
                 </Text>
-                <Text variant="body" className="mb-6 text-muted-foreground">
-                  Don Norman
+                <Text variant="caption1" className="text-muted-foreground text-center mt-1">
+                  Tap the + button to add a book or article.
                 </Text>
               </View>
-              <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
-                <View className="h-full w-[65%] rounded-full bg-[#007AFF]" />
-              </View>
-            </Pressable>
-            </Link>
-
-            {/* Card 2 */}
-            <Pressable className="group min-h-[240px] flex-1 justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 active:opacity-80">
-              <View className="mb-4 flex-row items-start justify-between">
-                <View className="flex-row items-center gap-2">
-                  <Icon name="doc" size={16} color="#8b90a0" />
-                  <Text variant="caption1" className="tracking-wider text-muted-foreground">
-                    ARTICLE
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2 rounded-full border border-[#2C2C2E] bg-[#121212] px-3 py-1">
-                  <Text variant="caption1" className="text-muted-foreground">
-                    5 min read
-                  </Text>
-                </View>
-              </View>
-              <View>
-                <Text variant="heading" className="mb-2 text-white">
-                  Why we need to rethink the modern web architecture
-                </Text>
-                <Text variant="caption1" className="mb-6 text-muted-foreground">
-                  Medium • Saved yesterday
-                </Text>
-              </View>
-              <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
-                <View className="h-full w-[10%] rounded-full bg-[#007AFF] opacity-50" />
-              </View>
-            </Pressable>
-
-            {/* Card 3 */}
-            <Pressable className="group min-h-[240px] flex-1 justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 active:opacity-80">
-              <View className="mb-4 flex-row items-start justify-between">
-                <View className="flex-row items-center gap-2">
-                  <Icon name="doc.on.doc" size={16} color="#8b90a0" />
-                  <Text variant="caption1" className="tracking-wider text-muted-foreground">
-                    PASTED TEXT
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-2 rounded-full border border-[#2C2C2E] bg-[#121212] px-3 py-1">
-                  <Text variant="caption1" className="text-muted-foreground">
-                    2 min read
-                  </Text>
-                </View>
-              </View>
-              <View>
-                <Text variant="heading" className="mb-2 text-white">
-                  Meeting Notes: Q3 Strategy Alignment
-                </Text>
-                <Text variant="caption1" className="mb-6 text-muted-foreground">
-                  Pasted 2 hours ago
-                </Text>
-              </View>
-              <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
-                <View className="h-full w-[0%] rounded-full bg-[#007AFF]" />
-              </View>
-            </Pressable>
+            ) : (
+              books.map((book) => (
+                <Link key={book.id} href={{ pathname: '/reader', params: { bookId: book.id } }} asChild>
+                  <Pressable className="group min-h-[240px] w-full md:w-[48%] lg:w-[31%] flex-col justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-6 active:opacity-80">
+                    <View className="mb-4 flex-row items-start justify-between">
+                      <View className="flex-row items-center gap-2">
+                        <Icon name={book.type === 'book' ? 'book' : 'doc'} size={16} color="#8b90a0" />
+                        <Text variant="caption1" className="tracking-wider text-muted-foreground uppercase">
+                          {book.type}
+                        </Text>
+                      </View>
+                    </View>
+                    <View>
+                      <Text variant="title3" className="mb-2 text-white" numberOfLines={2}>
+                        {book.title}
+                      </Text>
+                      {book.author && (
+                        <Text variant="body" className="mb-6 text-muted-foreground">
+                          {book.author}
+                        </Text>
+                      )}
+                    </View>
+                    <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
+                      <View 
+                        className="h-full bg-[#007AFF]" 
+                        style={{ width: `${Math.min(100, (book.progress / (book.content.split(/\s+/).length || 1)) * 100)}%` }} 
+                      />
+                    </View>
+                  </Pressable>
+                </Link>
+              ))
+            )}
           </View>
         </ScrollView>
 
         {/* Floating Action Button */}
         <Pressable
+          onPress={() => setIsAddSheetOpen(true)}
           className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-[#007AFF] shadow-lg shadow-[#007AFF]/30 active:scale-95 md:bottom-12 md:right-12">
           <Icon name="plus" color="#FFFFFF" size={28} />
         </Pressable>
       </View>
+
+      <Sheet isOpen={isAddSheetOpen} onClose={() => setIsAddSheetOpen(false)}>
+        <View className="px-6 pb-8 pt-2">
+          <Text variant="title3" className="mb-6 font-bold text-white">
+            Add to Library
+          </Text>
+          
+          <View className="gap-2">
+            <Pressable 
+              onPress={handlePickDocument}
+              className="flex-row items-center gap-4 rounded-xl bg-[#1C1C1E] p-4 active:opacity-70"
+            >
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#007AFF]/20">
+                <Icon name="doc.fill" materialIcon={{ name: 'insert-drive-file' }} size={20} color="#007AFF" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-white">Document</Text>
+                <Text variant="caption1" className="text-muted-foreground">PDF, TXT, EPUB</Text>
+              </View>
+            </Pressable>
+
+            <Pressable 
+              onPress={() => handlePlaceholderAction('Web Page')}
+              className="flex-row items-center gap-4 rounded-xl bg-[#1C1C1E] p-4 active:opacity-70"
+            >
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#34C759]/20">
+                <Icon name={'safari.fill' as any} materialIcon={{ name: 'public' }} size={20} color="#34C759" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-white">Web Page</Text>
+                <Text variant="caption1" className="text-muted-foreground">Extract text from an article</Text>
+              </View>
+            </Pressable>
+
+            <Pressable 
+              onPress={() => handlePlaceholderAction('Clipboard')}
+              className="flex-row items-center gap-4 rounded-xl bg-[#1C1C1E] p-4 active:opacity-70"
+            >
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF9500]/20">
+                <Icon name="doc.on.clipboard.fill" materialIcon={{ name: 'content-paste' }} size={20} color="#FF9500" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-white">Clipboard</Text>
+                <Text variant="caption1" className="text-muted-foreground">Paste text directly</Text>
+              </View>
+            </Pressable>
+          </View>
+        </View>
+      </Sheet>
     </>
   );
 }

@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, Pressable } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { Icon } from '@/components/nativewindui/Icon';
 import { Slider } from '@/components/nativewindui/Slider';
 import { useStore } from '@/store/store';
-
-const MOCK_TEXT = `It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness, it was the spring of hope, it was the winter of despair.`;
 
 function getORP(word: string) {
   const length = word.length;
@@ -26,16 +24,30 @@ function getORP(word: string) {
 }
 
 export default function ReaderScreen() {
-  const bookId = 'mock-book-1'; // Mock ID until we have real book routing
-  const words = useMemo(() => MOCK_TEXT.split(/\s+/), []);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { bookId } = useLocalSearchParams<{ bookId: string }>();
+  const books = useStore((state) => state.books);
+  const updateBookProgress = useStore((state) => state.updateBookProgress);
+  const book = books.find((b) => b.id === bookId);
+
+  const words = useMemo(() => {
+    if (!book) return [];
+    return book.content.split(/\s+/).filter((w) => w.length > 0);
+  }, [book]);
+
+  const [currentIndex, setCurrentIndex] = useState(book?.progress ?? 0);
   const [isPlaying, setIsPlaying] = useState(false);
   
   const defaultWpm = useStore((state) => state.wpm);
   const bookWpms = useStore((state) => state.bookWpms);
   const setBookWpm = useStore((state) => state.setBookWpm);
   
-  const [wpm, setWpm] = useState(bookWpms[bookId] ?? defaultWpm);
+  const [wpm, setWpm] = useState(bookId ? (bookWpms[bookId] ?? defaultWpm) : defaultWpm);
+
+  useEffect(() => {
+    if (bookId) {
+      updateBookProgress(bookId, currentIndex);
+    }
+  }, [currentIndex, bookId]);
 
   useEffect(() => {
     // Lock to landscape when opening the reader
@@ -50,7 +62,7 @@ export default function ReaderScreen() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (isPlaying) {
+    if (isPlaying && words.length > 0) {
       const msPerWord = 60000 / wpm;
       timerRef.current = setInterval(() => {
         setCurrentIndex((prev) => {
@@ -78,6 +90,17 @@ export default function ReaderScreen() {
   const seekForward = () => {
     setCurrentIndex((prev) => Math.min(words.length - 1, prev + 10));
   };
+
+  if (!book) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black">
+        <Text className="text-white">Book not found</Text>
+        <Pressable onPress={() => router.back()} className="mt-4 rounded-lg bg-primary px-4 py-2">
+          <Text className="text-white">Go Back</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   const currentWord = words[currentIndex] || '';
   const orpData = getORP(currentWord);
@@ -109,62 +132,60 @@ export default function ReaderScreen() {
     <View className="flex-1 bg-[#131313]">
       <StatusBar hidden />
       <Stack.Screen options={{ headerShown: false }} />
-      
-      {/* Absolute Back Button */}
-      <Pressable onPress={() => router.back()} className="absolute left-6 top-6 z-50 p-2.5">
-        <Icon name="chevron.left" materialIcon={{ name: 'arrow-back' }} color="#c1c6d7" size={32} />
-      </Pressable>
+      {/* Absolute Header Info */}
+      <View className="absolute left-8 right-8 top-8 z-50 flex-row items-center justify-between">
+        <Pressable onPress={() => router.back()} className="p-2">
+          <Icon name="chevron.left" materialIcon={{ name: 'arrow-back' }} color="#c1c6d7" size={32} />
+        </Pressable>
+        <View className="items-center">
+          <Text className="text-xs font-bold uppercase tracking-widest text-[#8b90a0]">{book.type}</Text>
+          <Text className="mt-0.5 text-sm font-semibold text-white" numberOfLines={1}>{book.title}</Text>
+        </View>
+        <View className="w-12" />
+      </View>
 
-      <View className="flex-1 flex-row items-center justify-center gap-16 px-12 pt-4">
+      <View className="flex-1 flex-row items-center justify-center gap-16 px-12 pt-12">
         {/* Left Side: RSVP Text Area */}
-        <View className="flex-1 max-w-[600px] flex-col items-center justify-center">
+        <View className="max-w-[600px] flex-1 items-center justify-center">
           <View className="flex-row flex-wrap justify-center opacity-40">
-            <Text className="text-lg leading-[28px] text-[#c1c6d7]">
+            <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
                 {words.slice(Math.max(0, currentIndex - 5), currentIndex).join(' ')}
             </Text>
           </View>
           
-          <View className="relative my-5 flex-row w-full items-center justify-center py-4">
+          <View className="relative my-5 w-full flex-row items-center justify-center py-4">
             {hasPreviousWord && <View className="absolute bottom-1/2 left-1/2 top-0 mb-10 w-[1px] bg-[#353535] opacity-30" />}
             <View className="absolute bottom-0 left-1/2 top-1/2 mt-10 w-[1px] bg-[#353535] opacity-30" />
             <View className="flex-1 items-end">
-              <Text className="text-[64px] font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.left}</Text>
+              <Text className="text-6xl font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.left}</Text>
             </View>
             <View className="relative items-center">
-              {hasPreviousWord && (
-                <View 
-                  className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary" 
-                  style={{ shadowColor: 'rgba(173,198,255,0.8)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8, elevation: 5 }} 
-                />
-              )}
-              <Text className="text-[64px] font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.orp}</Text>
-              <View 
-                className="absolute -bottom-6 h-1.5 w-1.5 rounded-full bg-primary" 
-                style={{ shadowColor: 'rgba(173,198,255,0.8)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 8, elevation: 5 }} 
-              />
+              {hasPreviousWord && <View className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary shadow-lg shadow-primary/80 elevation-5" />}
+              <Text className="text-6xl font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.orp}</Text>
+              <View className="absolute -bottom-6 h-1.5 w-1.5 rounded-full bg-primary shadow-lg shadow-primary/80 elevation-5" />
             </View>
             <View className="flex-1 items-start">
-              <Text className="text-[64px] font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.right}</Text>
+              <Text className="text-6xl font-bold text-primary" style={{ textShadowColor: 'rgba(173, 198, 255, 0.15)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 40 }}>{orpData.right}</Text>
             </View>
           </View>
 
           <View className="flex-row flex-wrap justify-center opacity-40">
-            <Text className="text-lg leading-[28px] text-[#c1c6d7]">
+            <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
                 {words.slice(currentIndex + 1, currentIndex + 6).join(' ')}
             </Text>
           </View>
         </View>
 
         {/* Right Side: Controls Cluster */}
-        <View className="flex-1 max-w-[400px] flex-col items-center justify-center gap-10">
-          <View className="flex-row w-full items-center">
+        <View className="max-w-[400px] flex-1 items-center justify-center gap-10">
+          <View className="w-full flex-row items-center">
             <Icon name="timer" materialIcon={{ name: 'speed' }} size={20} color="#8b90a0" />
             <View className="mx-4 flex-1">
               <Slider
                 value={wpm}
                 onValueChange={(newWpm) => {
                   setWpm(newWpm);
-                  setBookWpm(bookId, newWpm);
+                  if (bookId) setBookWpm(bookId, newWpm);
                 }}
                 minimumValue={100}
                 maximumValue={1000}
@@ -172,8 +193,8 @@ export default function ReaderScreen() {
               />
             </View>
             <View className="min-w-[48px] flex-col items-end">
-              <Text className="text-xs font-medium tracking-[0.6px] text-primary">{wpm}</Text>
-              <Text className="text-[9px] font-medium tracking-[0.6px] text-[#8b90a0]">WPM</Text>
+              <Text className="text-xs font-medium tracking-wider text-primary">{wpm}</Text>
+              <Text className="text-[9px] font-medium uppercase tracking-wider text-[#8b90a0]">WPM</Text>
             </View>
           </View>
 

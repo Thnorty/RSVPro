@@ -1,10 +1,23 @@
 import { create } from 'zustand';
 
+export interface Book {
+  id: string;
+  title: string;
+  author?: string;
+  content: string;
+  progress: number; // Index of the last read word
+  type: 'book' | 'article' | 'pasted';
+  dateAdded: number;
+}
+
 export interface AppState {
   wpm: number;
   setWpm: (wpm: number) => void;
   bookWpms: Record<string, number>;
   setBookWpm: (bookId: string, wpm: number) => void;
+  books: Book[];
+  addBook: (book: Book) => void;
+  updateBookProgress: (bookId: string, progress: number) => void;
   bears: number;
   increasePopulation: () => void;
   removeAllBears: () => void;
@@ -16,6 +29,11 @@ export const useStore = create<AppState>((set) => ({
   setWpm: (wpm) => set({ wpm }),
   bookWpms: {},
   setBookWpm: (bookId, wpm) => set((state) => ({ bookWpms: { ...state.bookWpms, [bookId]: wpm } })),
+  books: [],
+  addBook: (book) => set((state) => ({ books: [book, ...state.books] })),
+  updateBookProgress: (bookId, progress) => set((state) => ({
+    books: state.books.map((b) => b.id === bookId ? { ...b, progress } : b)
+  })),
   bears: 0,
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
   removeAllBears: () => set({ bears: 0 }),
