@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import Animated, { FadeIn, FadeOut, LinearTransition, Easing } from 'react-native-reanimated';
 import { Icon } from '@/components/nativewindui/Icon';
 import { Slider } from '@/components/nativewindui/Slider';
 import { useStore } from '@/store/store';
@@ -127,116 +128,112 @@ export default function ReaderScreen() {
   const orpData = getORP(currentWord);
   const hasPreviousWord = currentIndex > 0;
 
-  // PLAYING STATE
-  if (isPlaying) {
-    return (
-      <Pressable className="flex-1 items-center justify-center bg-black" onPress={togglePlay}>
-        <StatusBar hidden />
-        <View className="flex-row w-full items-center justify-center">
-            <View className="flex-1 items-end">
-              <Text className="text-[50px] font-bold text-[#e2e2e2]" numberOfLines={1}>{orpData.left}</Text>
-            </View>
-            <View className="relative items-center">
-              <Text className="text-[50px] font-bold text-primary" numberOfLines={1}>{orpData.orp}</Text>
-              <View className="absolute -bottom-4 h-1 w-1 rounded-full bg-[#007AFF]" />
-            </View>
-            <View className="flex-1 items-start">
-              <Text className="text-[50px] font-bold text-[#e2e2e2]" numberOfLines={1}>{orpData.right}</Text>
-            </View>
-        </View>
-      </Pressable>
-    );
-  }
-
-  // PAUSED STATE
   return (
     <View className="flex-1 bg-black">
       <StatusBar hidden />
       <Stack.Screen options={{ headerShown: false }} />
+      
       {/* Absolute Header Info */}
-      <View className="absolute left-8 right-8 top-8 z-50 flex-row items-center justify-between">
-        <Pressable onPress={() => router.back()} className="p-2">
-          <Icon name="chevron.left" materialIcon={{ name: 'arrow-back' }} color="#c1c6d7" size={32} />
-        </Pressable>
-        <View className="items-center">
-          <Text className="text-xs font-bold uppercase tracking-widest text-[#8b90a0]">{book.type}</Text>
-          <Text className="mt-0.5 text-sm font-semibold text-white" numberOfLines={1}>{book.title}</Text>
-        </View>
-        <View className="w-12" />
-      </View>
-
-      <View className="flex-1 flex-row items-center justify-center gap-16 px-12 pt-12">
-        {/* Left Side: RSVP Text Area */}
-        <View className="max-w-[600px] flex-1 items-center justify-center">
-          <View className="flex-row flex-wrap justify-center opacity-40">
-            <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
-                {words.slice(Math.max(0, currentIndex - 5), currentIndex).join(' ')}
-            </Text>
+      {!isPlaying && (
+        <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} className="absolute left-8 right-8 top-8 z-50 flex-row items-center justify-between">
+          <Pressable onPress={() => router.back()} className="p-2">
+            <Icon name="chevron.left" materialIcon={{ name: 'arrow-back' }} color="#c1c6d7" size={32} />
+          </Pressable>
+          <View className="items-center">
+            <Text className="text-xs font-bold uppercase tracking-widest text-[#8b90a0]">{book.type}</Text>
+            <Text className="mt-0.5 text-sm font-semibold text-white" numberOfLines={1}>{book.title}</Text>
           </View>
+          <View className="w-12" />
+        </Animated.View>
+      )}
+
+      {isPlaying && (
+        <Pressable className="absolute inset-0 z-50" onPress={togglePlay} />
+      )}
+
+      <View className={`flex-1 flex-row items-center justify-center ${isPlaying ? 'px-0 pt-0' : 'gap-12 px-10 pt-10'}`}>
+        {/* Left Side: RSVP Text Area */}
+        <Animated.View layout={LinearTransition.duration(300).easing(Easing.out(Easing.quad))} className={`items-center justify-center ${isPlaying ? 'flex-none w-full' : 'flex-1 max-w-[600px] min-w-[300px]'}`}>
+          {!isPlaying && (
+            <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} className="flex-row flex-wrap justify-center opacity-40">
+              <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
+                  {words.slice(Math.max(0, currentIndex - 5), currentIndex).join(' ')}
+              </Text>
+            </Animated.View>
+          )}
           
           <View className="relative my-5 w-full flex-row items-center justify-center py-4">
-            {hasPreviousWord && <View className="absolute bottom-1/2 left-1/2 top-0 mb-10 w-[1px] bg-[#353535] opacity-30" />}
-            <View className="absolute bottom-0 left-1/2 top-1/2 mt-10 w-[1px] bg-[#353535] opacity-30" />
+            {!isPlaying && hasPreviousWord && <Animated.View entering={FadeIn} exiting={FadeOut} className="absolute bottom-1/2 left-1/2 top-0 mb-10 w-[1px] bg-[#353535] opacity-30" />}
+            {!isPlaying && <Animated.View entering={FadeIn} exiting={FadeOut} className="absolute bottom-0 left-1/2 top-1/2 mt-10 w-[1px] bg-[#353535] opacity-30" />}
+            
             <View className="flex-1 items-end">
-              <Text className="text-6xl font-bold text-primary" numberOfLines={1}>{orpData.left}</Text>
+              <Text className={`font-bold ${isPlaying ? 'text-[50px] text-[#e2e2e2]' : 'text-6xl text-primary'}`} numberOfLines={1}>{orpData.left}</Text>
             </View>
             <View className="relative items-center">
-              {hasPreviousWord && <View className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary shadow-primary/80 elevation-5" />}
-              <Text className="text-6xl font-bold text-primary" numberOfLines={1}>{orpData.orp}</Text>
-              <View className="absolute -bottom-6 h-1.5 w-1.5 rounded-full bg-primary shadow-lg shadow-primary/80 elevation-5" />
+              {!isPlaying && hasPreviousWord && <Animated.View entering={FadeIn} exiting={FadeOut} className="absolute -top-6 h-1.5 w-1.5 rounded-full bg-primary shadow-primary/80 elevation-5" />}
+              <Text className={`font-bold text-primary ${isPlaying ? 'text-[50px]' : 'text-6xl'}`} numberOfLines={1}>{orpData.orp}</Text>
+              {!isPlaying ? (
+                <Animated.View entering={FadeIn} exiting={FadeOut} className="absolute -bottom-6 h-1.5 w-1.5 rounded-full bg-primary shadow-lg shadow-primary/80 elevation-5" />
+              ) : (
+                <Animated.View entering={FadeIn} exiting={FadeOut} className="absolute -bottom-4 h-1 w-1 rounded-full bg-[#007AFF]" />
+              )}
             </View>
             <View className="flex-1 items-start">
-              <Text className="text-6xl font-bold text-primary" numberOfLines={1}>{orpData.right}</Text>
+              <Text className={`font-bold ${isPlaying ? 'text-[50px] text-[#e2e2e2]' : 'text-6xl text-primary'}`} numberOfLines={1}>{orpData.right}</Text>
             </View>
           </View>
 
-          <View className="flex-row flex-wrap justify-center opacity-40">
-            <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
-                {words.slice(currentIndex + 1, currentIndex + 6).join(' ')}
-            </Text>
-          </View>
-        </View>
+          {!isPlaying && (
+            <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(200)} className="flex-row flex-wrap justify-center opacity-40">
+              <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
+                  {words.slice(currentIndex + 1, currentIndex + 6).join(' ')}
+              </Text>
+            </Animated.View>
+          )}
+        </Animated.View>
 
         {/* Right Side: Controls Cluster */}
-        <View className="max-w-[400px] flex-1 items-center justify-center gap-10">
-          <View className="w-full flex-row items-center">
-            <Icon name="timer" materialIcon={{ name: 'speed' }} size={20} color="#8b90a0" />
-            <View className="mx-4 flex-1">
-              <Slider
-                value={wpm}
-                onValueChange={(newWpm) => {
-                  setWpm(newWpm);
-                  if (bookId) setBookWpm(bookId, newWpm);
-                }}
-                minimumValue={100}
-                maximumValue={1000}
-                step={10}
-              />
+        {!isPlaying && (
+          <Animated.View layout={LinearTransition.duration(300).easing(Easing.out(Easing.quad))} entering={FadeIn.delay(150).duration(200)} exiting={FadeOut.duration(200)} className="w-[350px] flex-none items-center justify-center gap-10">
+            <View className="w-full flex-row items-center">
+              <Icon name="timer" materialIcon={{ name: 'speed' }} size={20} color="#8b90a0" />
+              <View className="mx-4 flex-1">
+                <Slider
+                  value={wpm}
+                  onValueChange={(newWpm) => {
+                    setWpm(newWpm);
+                    if (bookId) setBookWpm(bookId, newWpm);
+                  }}
+                  minimumValue={100}
+                  maximumValue={1000}
+                  step={10}
+                />
+              </View>
+              <View className="min-w-[48px] flex-col items-end">
+                <Text className="text-xs font-medium tracking-wider text-primary">{wpm}</Text>
+                <Text className="text-[9px] font-medium uppercase tracking-wider text-[#8b90a0]">WPM</Text>
+              </View>
             </View>
-            <View className="min-w-[48px] flex-col items-end">
-              <Text className="text-xs font-medium tracking-wider text-primary">{wpm}</Text>
-              <Text className="text-[9px] font-medium uppercase tracking-wider text-[#8b90a0]">WPM</Text>
-            </View>
-          </View>
 
-          <View className="flex-row items-center justify-center gap-12">
-            <Pressable className="rounded-full p-3" onPress={seekBackward}>
-              <Icon name={'gobackward.10' as any} materialIcon={{ name: 'replay-10' }} size={28} color="#c1c6d7" />
-            </Pressable>
-            
-            <Pressable 
-              className="h-20 w-20 items-center justify-center rounded-full bg-primary" 
-              style={{ shadowColor: 'rgba(173,198,255,0.3)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 30, elevation: 10 }}
-              onPress={togglePlay}
-            >
-              <Icon name="play.fill" materialIcon={{ name: 'play-arrow' }} size={36} color="#002e69" />
-            </Pressable>
-            
-            <Pressable className="rounded-full p-3" onPress={seekForward}>
-              <Icon name={'goforward.10' as any} materialIcon={{ name: 'forward-10' }} size={28} color="#c1c6d7" />
-            </Pressable>
-          </View>
-        </View>
+            <View className="flex-row items-center justify-center gap-12">
+              <Pressable className="rounded-full p-3" onPress={seekBackward}>
+                <Icon name={'gobackward.10' as any} materialIcon={{ name: 'replay-10' }} size={28} color="#c1c6d7" />
+              </Pressable>
+              
+              <Pressable 
+                className="h-20 w-20 items-center justify-center rounded-full bg-primary" 
+                style={{ shadowColor: 'rgba(173,198,255,0.3)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 30, elevation: 10 }}
+                onPress={togglePlay}
+              >
+                <Icon name="play.fill" materialIcon={{ name: 'play-arrow' }} size={36} color="#002e69" />
+              </Pressable>
+              
+              <Pressable className="rounded-full p-3" onPress={seekForward}>
+                <Icon name={'goforward.10' as any} materialIcon={{ name: 'forward-10' }} size={28} color="#c1c6d7" />
+              </Pressable>
+            </View>
+          </Animated.View>
+        )}
       </View>
     </View>
   );
