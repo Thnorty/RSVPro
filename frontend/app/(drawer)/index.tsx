@@ -13,6 +13,7 @@ import { ActivityIndicator } from '@/components/nativewindui/ActivityIndicator';
 import { useStore } from '@/store/store';
 import { extractTextFromPDF } from '@/lib/parsePDF';
 import { extractTextFromEPUB } from '@/lib/parseEPUB';
+import { useColorScheme } from '@/lib/useColorScheme';
 
 import { AppHeader } from '@/components/AppHeader';
 
@@ -21,6 +22,7 @@ export default function Home() {
   const router = useRouter();
   const [isAddSheetOpen, setIsAddSheetOpen] = React.useState(false);
   const { books, addBook, updateBook } = useStore();
+  const { colors } = useColorScheme();
 
   const handlePickDocument = async () => {
     try {
@@ -108,12 +110,12 @@ export default function Home() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View className="flex-1 bg-black">
+      <View className="flex-1 bg-background">
         <AppHeader
           leftTitleContent={
             <>
-              <Icon name="bolt" color="#007AFF" size={24} />
-              <Text className="font-sans text-lg font-black tracking-widest text-white uppercase ml-1">
+              <Icon name="bolt" color={colors.primary} size={24} />
+              <Text className="font-sans text-lg font-black tracking-widest text-foreground uppercase ml-1">
                 FOCUS
               </Text>
             </>
@@ -121,7 +123,7 @@ export default function Home() {
           rightContent={
             <Link href="/profile" asChild>
               <Pressable
-                className="h-8 w-8 overflow-hidden rounded-full border border-[#2C2C2E] bg-surface-variant active:opacity-70">
+                className="h-8 w-8 overflow-hidden rounded-full border border-border bg-secondary active:opacity-70">
                 <Image
                   source={{
                     uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfu7E3u9CZwmWezOlp4vmVaJN4PBUV6wbHhu9wtE32tAYgn4r9udiXcxaloDz-e814V3v2Luk6NOmxbhdPQPdveRCQ-cNsN0ovIM8AxsCMU2ICZi8LGJ9P7uEGlP-353qXXo686p2awEaGP8wg5EdIZdfqIvUWoFbDAYUkB-sjSgFGJVvgKoPf8criRXGZCqXFxe4ETOfTNzFiHTP8RbuBPDmDvqL1AufRxBt5JMwc0oiwH0HoRJMoWhMpD061XqQWC-KrBbf9LKGD',
@@ -139,7 +141,7 @@ export default function Home() {
           className="flex-1 px-6 pt-8">
           <View className="mb-8">
             <View>
-              <Text variant="largeTitle" className="mb-2 text-white">
+              <Text variant="largeTitle" className="mb-2 text-foreground">
                 Library
               </Text>
               <Text variant="body" className="text-muted-foreground">
@@ -147,17 +149,17 @@ export default function Home() {
               </Text>
             </View>
             <View className="flex-row gap-2 mt-6">
-              <Pressable className="rounded-full border border-[#2C2C2E] px-4 py-2 hover:border-primary active:opacity-70 bg-[#1C1C1E]">
-                <Text variant="caption1" className="text-white">
+              <Pressable className="rounded-full border border-border px-4 py-2 hover:border-primary active:opacity-70 bg-secondary">
+                <Text variant="caption1" className="text-foreground">
                   All
                 </Text>
               </Pressable>
-              <Pressable className="rounded-full border border-[#2C2C2E] px-4 py-2 hover:border-primary active:opacity-70">
+              <Pressable className="rounded-full border border-border px-4 py-2 hover:border-primary active:opacity-70">
                 <Text variant="caption1" className="text-muted-foreground">
                   Books
                 </Text>
               </Pressable>
-              <Pressable className="rounded-full border border-[#2C2C2E] px-4 py-2 hover:border-primary active:opacity-70">
+              <Pressable className="rounded-full border border-border px-4 py-2 hover:border-primary active:opacity-70">
                 <Text variant="caption1" className="text-muted-foreground">
                   Articles
                 </Text>
@@ -169,7 +171,7 @@ export default function Home() {
           <View className="flex-col gap-6">
             {books.length === 0 ? (
               <View className="flex-1 items-center justify-center py-20 opacity-50">
-                <Icon name={'books.vertical' as any} materialIcon={{ name: 'library-books' }} size={48} color="#8b90a0" />
+                <Icon name={'books.vertical' as any} materialIcon={{ name: 'library-books' }} size={48} color={colors.grey} />
                 <Text variant="body" className="mt-4 text-muted-foreground text-center">
                   Your library is empty.
                 </Text>
@@ -185,21 +187,21 @@ export default function Home() {
                 
                 const CardContent = (
                   <Pressable 
-                    className={`group w-full flex-col justify-between rounded-xl border border-[#2C2C2E] bg-[#0e0e0e] p-5 active:opacity-80 ${isProcessing ? 'opacity-50' : ''}`}
+                    className={`group w-full flex-col justify-between rounded-xl border border-border bg-card p-5 active:opacity-80 ${isProcessing ? 'opacity-50' : ''}`}
                     disabled={isProcessing}
                   >
                     <View className="mb-4 flex-row items-start justify-between">
                       <View className="flex-row items-center gap-2">
-                        <Icon name={book.type === 'book' ? 'book' : 'doc'} size={16} color="#8b90a0" />
+                        <Icon name={book.type === 'book' ? 'book' : 'doc'} size={16} color={colors.grey} />
                         <Text variant="caption1" className="tracking-wider text-muted-foreground uppercase">
                           {book.type}
                         </Text>
                       </View>
                       {isProcessing && <ActivityIndicator size="small" />}
-                      {isError && <Icon name={'exclamationmark.triangle.fill' as any} materialIcon={{ name: 'error' }} size={16} color="#FF3B30" />}
+                      {isError && <Icon name={'exclamationmark.triangle.fill' as any} materialIcon={{ name: 'error' }} size={16} color={colors.destructive} />}
                     </View>
                     <View>
-                      <Text variant="title3" className="mb-2 text-white" numberOfLines={2}>
+                      <Text variant="title3" className="mb-2 text-foreground" numberOfLines={2}>
                         {book.title}
                       </Text>
                       {book.author && (
@@ -214,13 +216,13 @@ export default function Home() {
                           <Text variant="caption2" className="text-muted-foreground">
                             Added {new Date(book.dateAdded || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                           </Text>
-                          <Text variant="caption2" className="text-[#007AFF] font-medium">
+                          <Text variant="caption2" className="text-primary font-medium">
                             {Math.round(percentage)}%
                           </Text>
                         </View>
-                        <View className="h-1 w-full overflow-hidden rounded-full bg-[#121212]">
+                        <View className="h-1 w-full overflow-hidden rounded-full bg-secondary">
                           <View 
-                            className="h-full bg-[#007AFF]" 
+                            className="h-full bg-primary" 
                             style={{ width: `${percentage}%` }} 
                           />
                         </View>
@@ -233,7 +235,7 @@ export default function Home() {
                     )}
                     {isError && (
                       <View className="mt-4">
-                        <Text variant="caption1" className="text-[#FF3B30]">Failed to process document</Text>
+                        <Text variant="caption1" className="text-destructive">Failed to process document</Text>
                       </View>
                     )}
                   </Pressable>
@@ -256,57 +258,55 @@ export default function Home() {
         {/* Floating Action Button */}
         <Pressable
           onPress={() => setIsAddSheetOpen(true)}
-          className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-[#007AFF] shadow-lg shadow-[#007AFF]/30 active:scale-95 md:bottom-12 md:right-12">
+          className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg shadow-primary/30 active:scale-95 md:bottom-12 md:right-12">
           <Icon name="plus" color="#FFFFFF" size={28} />
         </Pressable>
       </View>
 
       <Sheet isOpen={isAddSheetOpen} onClose={() => setIsAddSheetOpen(false)}>
-        <View className="px-6 pb-8 pt-2">
-          <Text variant="title3" className="mb-6 font-bold text-white">
-            Add to Library
-          </Text>
-          
-          <View className="gap-2">
-            <Pressable 
-              onPress={handlePickDocument}
-              className="flex-row items-center gap-4 rounded-xl bg-[#1C1C1E] p-4 active:opacity-70"
-            >
-              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#007AFF]/20">
-                <Icon name="doc.fill" materialIcon={{ name: 'insert-drive-file' }} size={20} color="#007AFF" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-white">Document</Text>
-                <Text variant="caption1" className="text-muted-foreground">PDF, TXT, EPUB</Text>
-              </View>
-            </Pressable>
+        <Text variant="title3" className="mb-6 font-bold text-foreground">
+          Add to Library
+        </Text>
+        
+        <View className="gap-2">
+          <Pressable 
+            onPress={handlePickDocument}
+            className="flex-row items-center gap-4 rounded-xl bg-card p-4 active:opacity-70"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+              <Icon name="doc.fill" materialIcon={{ name: 'insert-drive-file' }} size={20} color={colors.primary} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-semibold text-foreground">Document</Text>
+              <Text variant="caption1" className="text-muted-foreground">PDF, TXT, EPUB</Text>
+            </View>
+          </Pressable>
 
-            <Pressable 
-              onPress={() => handlePlaceholderAction('Web Page')}
-              className="flex-row items-center gap-4 rounded-xl bg-[#1C1C1E] p-4 active:opacity-70"
-            >
-              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#34C759]/20">
-                <Icon name={'safari.fill' as any} materialIcon={{ name: 'public' }} size={20} color="#34C759" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-white">Web Page</Text>
-                <Text variant="caption1" className="text-muted-foreground">Extract text from an article</Text>
-              </View>
-            </Pressable>
+          <Pressable 
+            onPress={() => handlePlaceholderAction('Web Page')}
+            className="flex-row items-center gap-4 rounded-xl bg-card p-4 active:opacity-70"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#34C759]/20">
+              <Icon name={'safari.fill' as any} materialIcon={{ name: 'public' }} size={20} color="#34C759" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-semibold text-foreground">Web Page</Text>
+              <Text variant="caption1" className="text-muted-foreground">Extract text from an article</Text>
+            </View>
+          </Pressable>
 
-            <Pressable 
-              onPress={() => handlePlaceholderAction('Clipboard')}
-              className="flex-row items-center gap-4 rounded-xl bg-[#1C1C1E] p-4 active:opacity-70"
-            >
-              <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF9500]/20">
-                <Icon name="doc.on.clipboard.fill" materialIcon={{ name: 'content-paste' }} size={20} color="#FF9500" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-white">Clipboard</Text>
-                <Text variant="caption1" className="text-muted-foreground">Paste text directly</Text>
-              </View>
-            </Pressable>
-          </View>
+          <Pressable 
+            onPress={() => handlePlaceholderAction('Clipboard')}
+            className="flex-row items-center gap-4 rounded-xl bg-card p-4 active:opacity-70"
+          >
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#FF9500]/20">
+              <Icon name="doc.on.clipboard.fill" materialIcon={{ name: 'content-paste' }} size={20} color="#FF9500" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-semibold text-foreground">Clipboard</Text>
+              <Text variant="caption1" className="text-muted-foreground">Paste text directly</Text>
+            </View>
+          </Pressable>
         </View>
       </Sheet>
     </>

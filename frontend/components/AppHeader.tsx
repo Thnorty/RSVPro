@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Icon } from '@/components/nativewindui/Icon';
 import { Text } from '@/components/nativewindui/Text';
 import * as React from 'react';
+import { useColorScheme } from '@/lib/useColorScheme';
 
 interface AppHeaderProps {
   title?: string;
@@ -25,6 +26,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors } = useColorScheme();
 
   const handleLeftPress = () => {
     if (onLeftPress) {
@@ -37,17 +39,17 @@ export function AppHeader({
   return (
     <View
       style={{ paddingTop: insets.top }}
-      className="flex-row items-center justify-between border-b border-[#2C2C2E] bg-black px-6 pb-4">
+      className="flex-row items-center justify-between bg-background px-6 pb-4">
       <View className="flex-row items-center gap-2 h-8">
         {(showBack || leftIcon) && (
           <TouchableOpacity onPress={handleLeftPress} className="active:scale-95 active:opacity-70">
-            {leftIcon || (showBack && <Icon name="arrow.left" color="#007AFF" size={24} />)}
+            {leftIcon || (showBack && <Icon name="arrow.left" color={colors.primary} size={24} />)}
           </TouchableOpacity>
         )}
         {leftTitleContent ? (
           leftTitleContent
         ) : title ? (
-          <Text className="font-sans text-sm font-medium tracking-tight text-white ml-2">
+          <Text className="font-sans text-sm font-medium tracking-tight text-foreground ml-2">
             {title}
           </Text>
         ) : null}

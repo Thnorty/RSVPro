@@ -78,11 +78,11 @@ export function Sheet({ isOpen, onClose, children }: SheetProps) {
 
       <Animated.View 
         style={animatedStyle}
-        className="bg-[#121212] rounded-t-3xl pb-12"
+        className="bg-card rounded-t-3xl pb-12 px-6"
       >
         <GestureDetector gesture={gesture}>
           <View className="w-full pt-6 pb-4 items-center bg-transparent">
-            <View className="h-1 w-12 bg-[#2C2C2E] rounded-full" />
+            <View className="h-1 w-12 bg-border rounded-full" />
           </View>
         </GestureDetector>
         
