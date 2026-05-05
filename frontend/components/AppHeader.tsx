@@ -1,0 +1,60 @@
+import { View, Pressable, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+
+import { Icon } from '@/components/nativewindui/Icon';
+import { Text } from '@/components/nativewindui/Text';
+import * as React from 'react';
+
+interface AppHeaderProps {
+  title?: string;
+  leftTitleContent?: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  rightContent?: React.ReactNode;
+  onLeftPress?: () => void;
+  showBack?: boolean;
+}
+
+export function AppHeader({
+  title,
+  leftTitleContent,
+  leftIcon,
+  rightContent,
+  onLeftPress,
+  showBack,
+}: AppHeaderProps) {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const handleLeftPress = () => {
+    if (onLeftPress) {
+      onLeftPress();
+    } else if (showBack) {
+      router.back();
+    }
+  };
+
+  return (
+    <View
+      style={{ paddingTop: insets.top }}
+      className="flex-row items-center justify-between border-b border-[#2C2C2E] bg-black px-6 pb-4">
+      <View className="flex-row items-center gap-2 h-8">
+        {(showBack || leftIcon) && (
+          <TouchableOpacity onPress={handleLeftPress} className="active:scale-95 active:opacity-70">
+            {leftIcon || (showBack && <Icon name="arrow.left" color="#007AFF" size={24} />)}
+          </TouchableOpacity>
+        )}
+        {leftTitleContent ? (
+          leftTitleContent
+        ) : title ? (
+          <Text className="font-sans text-sm font-medium tracking-tight text-white ml-2">
+            {title}
+          </Text>
+        ) : null}
+      </View>
+      <View className="flex-row items-center justify-end h-8">
+        {rightContent}
+      </View>
+    </View>
+  );
+}

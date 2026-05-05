@@ -14,6 +14,8 @@ import { useStore } from '@/store/store';
 import { extractTextFromPDF } from '@/lib/parsePDF';
 import { extractTextFromEPUB } from '@/lib/parseEPUB';
 
+import { AppHeader } from '@/components/AppHeader';
+
 export default function Home() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -107,28 +109,29 @@ export default function Home() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <View className="flex-1 bg-black">
-        {/* Header - Assuming it acts like the HTML top app bar */}
-        <View
-          style={{ paddingTop: insets.top }}
-          className="flex-row items-center justify-between border-b border-[#2C2C2E] bg-black px-6 pb-4">
-          <View className="flex-row items-center gap-2">
-            <Icon name="bolt" color="#007AFF" size={24} />
-            <Text className="font-sans text-lg font-black tracking-widest text-white uppercase">
-              FOCUS
-            </Text>
-          </View>
-          <Link href="/profile" asChild>
-            <Pressable
-              className="h-8 w-8 overflow-hidden rounded-full border border-[#2C2C2E] bg-surface-variant active:opacity-70">
-              <Image
-                source={{
-                  uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfu7E3u9CZwmWezOlp4vmVaJN4PBUV6wbHhu9wtE32tAYgn4r9udiXcxaloDz-e814V3v2Luk6NOmxbhdPQPdveRCQ-cNsN0ovIM8AxsCMU2ICZi8LGJ9P7uEGlP-353qXXo686p2awEaGP8wg5EdIZdfqIvUWoFbDAYUkB-sjSgFGJVvgKoPf8criRXGZCqXFxe4ETOfTNzFiHTP8RbuBPDmDvqL1AufRxBt5JMwc0oiwH0HoRJMoWhMpD061XqQWC-KrBbf9LKGD',
-                }}
-                className="h-full w-full"
-              />
-            </Pressable>
-          </Link>
-        </View>
+        <AppHeader
+          leftTitleContent={
+            <>
+              <Icon name="bolt" color="#007AFF" size={24} />
+              <Text className="font-sans text-lg font-black tracking-widest text-white uppercase ml-1">
+                FOCUS
+              </Text>
+            </>
+          }
+          rightContent={
+            <Link href="/profile" asChild>
+              <Pressable
+                className="h-8 w-8 overflow-hidden rounded-full border border-[#2C2C2E] bg-surface-variant active:opacity-70">
+                <Image
+                  source={{
+                    uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAfu7E3u9CZwmWezOlp4vmVaJN4PBUV6wbHhu9wtE32tAYgn4r9udiXcxaloDz-e814V3v2Luk6NOmxbhdPQPdveRCQ-cNsN0ovIM8AxsCMU2ICZi8LGJ9P7uEGlP-353qXXo686p2awEaGP8wg5EdIZdfqIvUWoFbDAYUkB-sjSgFGJVvgKoPf8criRXGZCqXFxe4ETOfTNzFiHTP8RbuBPDmDvqL1AufRxBt5JMwc0oiwH0HoRJMoWhMpD061XqQWC-KrBbf9LKGD',
+                  }}
+                  className="h-full w-full"
+                />
+              </Pressable>
+            </Link>
+          }
+        />
 
         {/* Main Content Area */}
         <ScrollView

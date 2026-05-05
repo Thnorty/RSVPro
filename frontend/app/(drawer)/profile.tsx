@@ -1,6 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
 import * as React from 'react';
-import { View, Image, ScrollView, Switch, Pressable } from 'react-native';
+import { View, Image, ScrollView, Switch, Pressable, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/nativewindui/Text';
@@ -9,6 +9,8 @@ import { Slider } from '@/components/nativewindui/Slider';
 import { Sheet } from '@/components/nativewindui/Sheet';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { useStore } from '@/store/store';
+
+import { AppHeader } from '@/components/AppHeader';
 
 // Memoized slider to prevent React re-renders from interfering with native slider physics
 const WpmSlider = React.memo(({ initialValue, onChange }: { initialValue: number, onChange: (val: number) => void }) => (
@@ -48,20 +50,15 @@ export default function Profile() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <View className="flex-1 bg-black">
-        {/* Header */}
-        <View
-          style={{ paddingTop: insets.top }}
-          className="flex-row items-center justify-between border-b border-[#2C2C2E] bg-black px-6 pb-4">
-          <View className="flex-row items-center gap-4">
-            <Pressable onPress={() => router.back()} className="active:scale-95 active:opacity-70">
-              <Icon name="arrow.left" color="#007AFF" size={24} />
-            </Pressable>
-            <Text className="font-sans text-sm font-medium tracking-tight text-white">Profile</Text>
-          </View>
-          <Pressable className="active:scale-95 active:opacity-70">
-            <Icon name="ellipsis" color="#007AFF" size={24} />
-          </Pressable>
-        </View>
+        <AppHeader
+          title="Profile"
+          showBack={true}
+          rightContent={
+            <TouchableOpacity className="active:scale-95 active:opacity-70">
+              <Icon name="ellipsis" color="#007AFF" size={24} />
+            </TouchableOpacity>
+          }
+        />
 
         <ScrollView
           className="flex-1 px-6"
@@ -142,21 +139,6 @@ export default function Profile() {
                     <Icon name="chevron.right" color="#8b90a0" size={20} />
                   </View>
                 </Pressable>
-                <View className="flex-row items-center justify-between border-b border-[#2C2C2E] py-6">
-                  <View>
-                    <Text variant="body" className="text-white">
-                      Focus Mode
-                    </Text>
-                    <Text className="text-[12px] text-muted-foreground">
-                      Disable all non-essential UI elements
-                    </Text>
-                  </View>
-                  <Switch
-                    value={true}
-                    trackColor={{ false: '#2C2C2E', true: '#007AFF' }}
-                    thumbColor="white"
-                  />
-                </View>
               </View>
             </View>
 
