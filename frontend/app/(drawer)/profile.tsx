@@ -14,22 +14,24 @@ import { COLORS } from '@/theme/colors';
 import { AppHeader } from '@/components/AppHeader';
 
 // Memoized slider to prevent React re-renders from interfering with native slider physics
-const WpmSlider = React.memo(({ initialValue, onChange }: { initialValue: number, onChange: (val: number) => void }) => (
-  <Slider
-    value={initialValue}
-    onValueChange={onChange}
-    minimumValue={100}
-    maximumValue={1000}
-    step={10}
-  />
-));
+const WpmSlider = React.memo(
+  ({ initialValue, onChange }: { initialValue: number; onChange: (val: number) => void }) => (
+    <Slider
+      value={initialValue}
+      onValueChange={onChange}
+      minimumValue={100}
+      maximumValue={1000}
+      step={10}
+    />
+  )
+);
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { colorScheme, setColorScheme, colors } = useColorScheme();
   const { wpm, setWpm } = useStore();
-  
+
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [localWpm, setLocalWpm] = React.useState(wpm);
 
@@ -77,7 +79,7 @@ export default function Profile() {
                 <Icon name="pencil" color="white" size={12} />
               </View>
             </View>
-            <Text variant="title1" className="mt-4 mb-1 text-foreground">
+            <Text variant="title1" className="mb-1 mt-4 text-foreground">
               Julian Thorne
             </Text>
             <Text variant="body" className="text-muted-foreground">
@@ -88,7 +90,7 @@ export default function Profile() {
           {/* Statistics Grid */}
           <View className="mb-12 flex-col gap-4 md:flex-row">
             <View className="flex-1 items-center justify-center rounded-lg border border-border bg-card p-6">
-              <Text className="mb-2 text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
+              <Text className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                 TOTAL WORDS READ
               </Text>
               <Text variant="title2" className="text-foreground">
@@ -97,7 +99,7 @@ export default function Profile() {
               <View className="mt-2 h-1 w-1 rounded-full bg-primary" />
             </View>
             <View className="flex-1 items-center justify-center rounded-lg border border-border bg-card p-6">
-              <Text className="mb-2 text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
+              <Text className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                 READING STREAK
               </Text>
               <Text variant="title2" className="text-foreground">
@@ -106,7 +108,7 @@ export default function Profile() {
               <View className="mt-2 h-1 w-1 rounded-full bg-primary" />
             </View>
             <View className="flex-1 items-center justify-center rounded-lg border border-border bg-card p-6">
-              <Text className="mb-2 text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
+              <Text className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                 AVERAGE SPEED
               </Text>
               <Text variant="title2" className="text-foreground">
@@ -120,11 +122,11 @@ export default function Profile() {
           <View className="gap-10">
             {/* Reading Preferences */}
             <View>
-              <Text className="mb-4 text-[12px] font-medium tracking-[0.2em] text-primary uppercase">
+              <Text className="mb-4 text-[12px] font-medium uppercase tracking-[0.2em] text-primary">
                 READING PREFERENCES
               </Text>
               <View className="border-t border-border">
-                <Pressable 
+                <Pressable
                   onPress={openSheet}
                   className="flex-row items-center justify-between border-b border-border py-6 active:opacity-70">
                   <View>
@@ -145,7 +147,7 @@ export default function Profile() {
 
             {/* Account */}
             <View>
-              <Text className="mb-4 text-[12px] font-medium tracking-[0.2em] text-primary uppercase">
+              <Text className="mb-4 text-[12px] font-medium uppercase tracking-[0.2em] text-primary">
                 ACCOUNT
               </Text>
               <View className="border-t border-border">
@@ -166,7 +168,7 @@ export default function Profile() {
 
             {/* System */}
             <View>
-              <Text className="mb-4 text-[12px] font-medium tracking-[0.2em] text-primary uppercase">
+              <Text className="mb-4 text-[12px] font-medium uppercase tracking-[0.2em] text-primary">
                 SYSTEM
               </Text>
               <View className="border-t border-border">
@@ -197,7 +199,7 @@ export default function Profile() {
             </View>
 
             <Pressable className="mt-4 w-full rounded-lg border border-dashed border-destructive/30 py-6 active:bg-destructive/10 active:opacity-70">
-              <Text className="text-center text-[12px] font-medium tracking-widest text-destructive uppercase">
+              <Text className="text-center text-[12px] font-medium uppercase tracking-widest text-destructive">
                 LOG OUT
               </Text>
             </Pressable>
@@ -207,33 +209,32 @@ export default function Profile() {
         {/* WPM Bottom Sheet using reusable Sheet component */}
         <Sheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
           <View className="mb-8 flex-row items-center justify-between">
-            <Text variant="title3" className="text-foreground">Reading Speed</Text>
-            <View className="bg-primary/10 px-3 py-1 rounded-full">
-              <Text className="text-primary font-bold">{localWpm} WPM</Text>
+            <Text variant="title3" className="text-foreground">
+              Reading Speed
+            </Text>
+            <View className="rounded-full bg-primary/10 px-3 py-1">
+              <Text className="font-bold text-primary">{localWpm} WPM</Text>
             </View>
           </View>
 
-          <WpmSlider
-            initialValue={wpm}
-            onChange={handleSliderChange}
-          />
-          
-          <View className="flex-row justify-between mt-4">
+          <WpmSlider initialValue={wpm} onChange={handleSliderChange} />
+
+          <View className="mt-4 flex-row justify-between">
             <Text className="text-[10px] text-muted-foreground">100 WPM</Text>
             <Text className="text-[10px] text-muted-foreground">1000 WPM</Text>
           </View>
 
-          <View className="flex-row items-center justify-between gap-4 mt-10">
-            <Pressable 
+          <View className="mt-10 flex-row items-center justify-between gap-4">
+            <Pressable
               onPress={() => setIsSheetOpen(false)}
-              className="flex-1 bg-secondary py-4 rounded-xl items-center active:opacity-90">
-              <Text className="text-foreground font-bold">Cancel</Text>
+              className="flex-1 items-center rounded-xl bg-secondary py-4 active:opacity-90">
+              <Text className="font-bold text-foreground">Cancel</Text>
             </Pressable>
 
-            <Pressable 
+            <Pressable
               onPress={applyWpm}
-              className="flex-1 bg-primary py-4 rounded-xl items-center active:opacity-90">
-              <Text className="text-primary-foreground font-bold">Apply</Text>
+              className="flex-1 items-center rounded-xl bg-primary py-4 active:opacity-90">
+              <Text className="font-bold text-primary-foreground">Apply</Text>
             </Pressable>
           </View>
         </Sheet>

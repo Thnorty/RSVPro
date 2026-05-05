@@ -20,7 +20,9 @@ const DrawerLayout = () => (
         headerShown: false,
         headerTitle: 'Profile',
         drawerLabel: 'Profile',
-        drawerIcon: ({ size, color }) => <Ionicons name="person-outline" size={size} color={color} />,
+        drawerIcon: ({ size, color }) => (
+          <Ionicons name="person-outline" size={size} color={color} />
+        ),
       }}
     />
     <Drawer.Screen

@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { View, Pressable, Dimensions, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
   runOnJS,
   withTiming,
   interpolate,
-  Extrapolation
+  Extrapolation,
 } from 'react-native-reanimated';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -64,28 +64,21 @@ export function Sheet({ isOpen, onClose, children }: SheetProps) {
   });
 
   return (
-    <View 
-      style={StyleSheet.absoluteFill} 
-      pointerEvents={isOpen ? 'auto' : 'none'} 
-      className="justify-end"
-    >
-      <Animated.View 
-        style={[StyleSheet.absoluteFill, backdropStyle]}
-        className="bg-black"
-      >
+    <View
+      style={StyleSheet.absoluteFill}
+      pointerEvents={isOpen ? 'auto' : 'none'}
+      className="justify-end">
+      <Animated.View style={[StyleSheet.absoluteFill, backdropStyle]} className="bg-black">
         <Pressable className="flex-1" onPress={onClose} />
       </Animated.View>
 
-      <Animated.View 
-        style={animatedStyle}
-        className="bg-card rounded-t-3xl pb-12 px-6"
-      >
+      <Animated.View style={animatedStyle} className="rounded-t-3xl bg-card px-6 pb-12">
         <GestureDetector gesture={gesture}>
-          <View className="w-full pt-6 pb-4 items-center bg-transparent">
-            <View className="h-1 w-12 bg-border rounded-full" />
+          <View className="w-full items-center bg-transparent pb-4 pt-6">
+            <View className="h-1 w-12 rounded-full bg-border" />
           </View>
         </GestureDetector>
-        
+
         {children}
       </Animated.View>
     </View>

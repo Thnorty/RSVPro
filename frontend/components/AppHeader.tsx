@@ -40,7 +40,7 @@ export function AppHeader({
     <View
       style={{ paddingTop: insets.top }}
       className="flex-row items-center justify-between bg-background px-6 pb-4">
-      <View className="flex-row items-center gap-2 h-8">
+      <View className="h-8 flex-row items-center gap-2">
         {(showBack || leftIcon) && (
           <TouchableOpacity onPress={handleLeftPress} className="active:scale-95 active:opacity-70">
             {leftIcon || (showBack && <Icon name="arrow.left" color={colors.primary} size={24} />)}
@@ -49,14 +49,12 @@ export function AppHeader({
         {leftTitleContent ? (
           leftTitleContent
         ) : title ? (
-          <Text className="font-sans text-sm font-medium tracking-tight text-foreground ml-2">
+          <Text className="ml-2 font-sans text-sm font-medium tracking-tight text-foreground">
             {title}
           </Text>
         ) : null}
       </View>
-      <View className="flex-row items-center justify-end h-8">
-        {rightContent}
-      </View>
+      <View className="h-8 flex-row items-center justify-end">{rightContent}</View>
     </View>
   );
 }

@@ -4,8 +4,12 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import Animated, {
-  useSharedValue, useAnimatedStyle,
-  withTiming, interpolateColor, interpolate, Easing as REasing,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolateColor,
+  interpolate,
+  Easing as REasing,
 } from 'react-native-reanimated';
 import { Icon } from '@/components/nativewindui/Icon';
 import { Slider } from '@/components/nativewindui/Slider';
@@ -77,14 +81,19 @@ export default function ReaderScreen() {
       const msPerWord = 60000 / wpm;
       timerRef.current = setInterval(() => {
         setCurrentIndex((prev) => {
-          if (prev >= words.length - 1) { setIsPlaying(false); return prev; }
+          if (prev >= words.length - 1) {
+            setIsPlaying(false);
+            return prev;
+          }
           return prev + 1;
         });
       }, msPerWord);
     } else if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [isPlaying, wpm, words.length]);
 
   // Word container: slides between center and left panel
@@ -167,29 +176,56 @@ export default function ReaderScreen() {
 
       {/* Header — always mounted, opacity animated */}
       <Animated.View
-        style={[headerStyle, { position: 'absolute', left: 32, right: 32, top: 32, zIndex: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
-      >
+        style={[
+          headerStyle,
+          {
+            position: 'absolute',
+            left: 32,
+            right: 32,
+            top: 32,
+            zIndex: 50,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
+        ]}>
         <Pressable onPress={() => router.back()} className="p-2">
-          <Icon name="chevron.left" materialIcon={{ name: 'arrow-back' }} color="#c1c6d7" size={32} />
+          <Icon
+            name="chevron.left"
+            materialIcon={{ name: 'arrow-back' }}
+            color="#c1c6d7"
+            size={32}
+          />
         </Pressable>
         <View className="items-center">
-          <Text className="text-xs font-bold uppercase tracking-widest text-[#8b90a0]">{book.type}</Text>
-          <Text className="mt-0.5 text-sm font-semibold text-white" numberOfLines={1}>{book.title}</Text>
+          <Text className="text-xs font-bold uppercase tracking-widest text-[#8b90a0]">
+            {book.type}
+          </Text>
+          <Text className="mt-0.5 text-sm font-semibold text-white" numberOfLines={1}>
+            {book.title}
+          </Text>
         </View>
         <View className="w-12" />
       </Animated.View>
 
       <View className="flex-1 overflow-hidden" pointerEvents="box-none">
-
         {/* Context text ABOVE — always mounted, opacity animated */}
         <Animated.View
           pointerEvents="none"
           style={[
             contextStyle,
-            { position: 'absolute', left: 40, right: 430, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
-          ]}
-        >
-          <View style={{ position: 'absolute', bottom: '50%', marginBottom: 80, paddingHorizontal: 8 }}>
+            {
+              position: 'absolute',
+              left: 40,
+              right: 430,
+              top: 0,
+              bottom: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}>
+          <View
+            style={{ position: 'absolute', bottom: '50%', marginBottom: 80, paddingHorizontal: 8 }}>
             <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
               {words.slice(Math.max(0, currentIndex - 5), currentIndex).join(' ')}
             </Text>
@@ -201,9 +237,16 @@ export default function ReaderScreen() {
           pointerEvents="none"
           style={[
             contextStyle,
-            { position: 'absolute', left: 40, right: 430, top: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
-          ]}
-        >
+            {
+              position: 'absolute',
+              left: 40,
+              right: 430,
+              top: 0,
+              bottom: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}>
           <View style={{ position: 'absolute', top: '50%', marginTop: 80, paddingHorizontal: 8 }}>
             <Text className="text-center text-lg leading-7 text-[#c1c6d7]">
               {words.slice(currentIndex + 1, currentIndex + 6).join(' ')}
@@ -214,9 +257,18 @@ export default function ReaderScreen() {
         {/* Word container — slides, always mounted */}
         <Animated.View
           pointerEvents="none"
-          style={[StyleSheet.absoluteFillObject, wordAreaStyle, { alignItems: 'center', justifyContent: 'center' }]}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%', paddingVertical: 16 }}>
+          style={[
+            StyleSheet.absoluteFillObject,
+            wordAreaStyle,
+            { alignItems: 'center', justifyContent: 'center' },
+          ]}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              width: '100%',
+              paddingVertical: 16,
+            }}>
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
               <Animated.Text style={[wordPartStyle, { fontWeight: 'bold' }]} numberOfLines={1}>
                 {orpData.left}
@@ -226,14 +278,20 @@ export default function ReaderScreen() {
             <View style={{ alignItems: 'center' }}>
               <Animated.Text
                 style={[orpStyle, { fontWeight: 'bold', color: '#5B8BFF' }]}
-                numberOfLines={1}
-              >
+                numberOfLines={1}>
                 {orpData.orp}
               </Animated.Text>
               <Animated.View
                 style={[
                   dotStyle,
-                  { position: 'absolute', bottom: -16, width: 4, height: 4, borderRadius: 2, backgroundColor: '#007AFF' },
+                  {
+                    position: 'absolute',
+                    bottom: -16,
+                    width: 4,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: '#007AFF',
+                  },
                 ]}
               />
             </View>
@@ -250,9 +308,17 @@ export default function ReaderScreen() {
         <Animated.View
           style={[
             controlsStyle,
-            { position: 'absolute', bottom: 0, right: 40, top: 0, width: 350, alignItems: 'center', justifyContent: 'center', gap: 40 },
-          ]}
-        >
+            {
+              position: 'absolute',
+              bottom: 0,
+              right: 40,
+              top: 0,
+              width: 350,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 40,
+            },
+          ]}>
           <View className="w-full flex-row items-center">
             <Icon name="timer" materialIcon={{ name: 'speed' }} size={20} color="#8b90a0" />
             <View className="mx-4 flex-1">
@@ -269,23 +335,45 @@ export default function ReaderScreen() {
             </View>
             <View className="min-w-[48px] flex-col items-end">
               <Text className="text-xs font-medium tracking-wider text-primary">{wpm}</Text>
-              <Text className="text-[9px] font-medium uppercase tracking-wider text-[#8b90a0]">WPM</Text>
+              <Text className="text-[9px] font-medium uppercase tracking-wider text-[#8b90a0]">
+                WPM
+              </Text>
             </View>
           </View>
 
           <View className="flex-row items-center justify-center gap-12">
             <Pressable className="rounded-full p-3" onPress={seekBackward}>
-              <Icon name={'gobackward.10' as any} materialIcon={{ name: 'replay-10' }} size={28} color="#c1c6d7" />
+              <Icon
+                name={'gobackward.10' as any}
+                materialIcon={{ name: 'replay-10' }}
+                size={28}
+                color="#c1c6d7"
+              />
             </Pressable>
             <Pressable
               className="h-20 w-20 items-center justify-center rounded-full bg-primary"
-              style={{ shadowColor: 'rgba(173,198,255,0.3)', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 1, shadowRadius: 30, elevation: 10 }}
-              onPress={togglePlay}
-            >
-              <Icon name="play.fill" materialIcon={{ name: 'play-arrow' }} size={36} color="#002e69" />
+              style={{
+                shadowColor: 'rgba(173,198,255,0.3)',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 1,
+                shadowRadius: 30,
+                elevation: 10,
+              }}
+              onPress={togglePlay}>
+              <Icon
+                name="play.fill"
+                materialIcon={{ name: 'play-arrow' }}
+                size={36}
+                color="#002e69"
+              />
             </Pressable>
             <Pressable className="rounded-full p-3" onPress={seekForward}>
-              <Icon name={'goforward.10' as any} materialIcon={{ name: 'forward-10' }} size={28} color="#c1c6d7" />
+              <Icon
+                name={'goforward.10' as any}
+                materialIcon={{ name: 'forward-10' }}
+                size={28}
+                color="#c1c6d7"
+              />
             </Pressable>
           </View>
         </Animated.View>

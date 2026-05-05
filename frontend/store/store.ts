@@ -7,7 +7,7 @@ export interface Book {
   content: string;
   progress: number; // Index of the last read word
   totalWords?: number;
-  type: 'book' | 'article' | 'pasted';
+  type: 'document' | 'article' | 'pasted';
   dateAdded: number;
   status?: 'processing' | 'ready' | 'error';
 }
@@ -34,12 +34,14 @@ export const useStore = create<AppState>((set) => ({
   setBookWpm: (bookId, wpm) => set((state) => ({ bookWpms: { ...state.bookWpms, [bookId]: wpm } })),
   books: [],
   addBook: (book) => set((state) => ({ books: [book, ...state.books] })),
-  updateBook: (bookId, updates) => set((state) => ({
-    books: state.books.map((b) => b.id === bookId ? { ...b, ...updates } : b)
-  })),
-  updateBookProgress: (bookId, progress) => set((state) => ({
-    books: state.books.map((b) => b.id === bookId ? { ...b, progress } : b)
-  })),
+  updateBook: (bookId, updates) =>
+    set((state) => ({
+      books: state.books.map((b) => (b.id === bookId ? { ...b, ...updates } : b)),
+    })),
+  updateBookProgress: (bookId, progress) =>
+    set((state) => ({
+      books: state.books.map((b) => (b.id === bookId ? { ...b, progress } : b)),
+    })),
   bears: 0,
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
   removeAllBears: () => set({ bears: 0 }),

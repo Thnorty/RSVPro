@@ -39,6 +39,7 @@
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.22",
     "expo-haptics": "~15.0.7",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.8",
     "expo-pdf-text-extract": "^1.0.1",
     "expo-router": "~6.0.10",

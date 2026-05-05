@@ -15,10 +15,10 @@ export async function extractTextFromEPUB(arrayBuffer: ArrayBuffer): Promise<str
   if (!containerXml) {
     throw new Error('Invalid EPUB: missing META-INF/container.xml');
   }
-  
+
   const container = parser.parse(containerXml);
   const rootfilePath = container.container?.rootfiles?.rootfile?.['@_full-path'];
-  
+
   if (!rootfilePath) {
     throw new Error('Invalid EPUB: could not find rootfile path');
   }
@@ -67,7 +67,7 @@ export async function extractTextFromEPUB(arrayBuffer: ArrayBuffer): Promise<str
     // Decode URI component because some epub generators URL encode the href
     const filePath = opfDir + decodeURIComponent(href);
     const htmlFile = zip.file(filePath);
-    
+
     if (htmlFile) {
       const htmlText = await htmlFile.async('text');
       // Strip HTML tags using regex to get plain text
@@ -77,7 +77,7 @@ export async function extractTextFromEPUB(arrayBuffer: ArrayBuffer): Promise<str
         .replace(/<[^>]+>/g, ' ') // Replace tags with space
         .replace(/\s+/g, ' ') // Remove multiple spaces
         .trim();
-        
+
       fullText += cleanText + '\n\n';
     }
   }
