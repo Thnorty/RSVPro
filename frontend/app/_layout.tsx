@@ -21,6 +21,9 @@ export {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+import { AuthProvider } from '@/lib/AuthContext';
+import { CustomAlert } from '@/components/CustomAlert';
+
 export default function RootLayout() {
   const [loaded] = useFonts({
     Inter: Inter_400Regular,
@@ -46,16 +49,18 @@ export default function RootLayout() {
       />
       {/* WRAP YOUR APP WITH ANY ADDITIONAL PROVIDERS HERE */}
       {/* <ExampleProvider> */}
-
-      <ActionSheetProvider>
-        <NavThemeProvider value={NAV_THEME[colorScheme]}>
-          <Stack screenOptions={SCREEN_OPTIONS}>
-            <Stack.Screen name="(drawer)" options={DRAWER_OPTIONS} />
-            <Stack.Screen name="modal" options={MODAL_OPTIONS} />
-          </Stack>
-        </NavThemeProvider>
-      </ActionSheetProvider>
-
+      <AuthProvider>
+        <ActionSheetProvider>
+          <NavThemeProvider value={NAV_THEME[colorScheme]}>
+            <Stack screenOptions={SCREEN_OPTIONS}>
+              <Stack.Screen name="(auth)" options={AUTH_OPTIONS} />
+              <Stack.Screen name="(drawer)" options={DRAWER_OPTIONS} />
+              <Stack.Screen name="modal" options={MODAL_OPTIONS} />
+            </Stack>
+            <CustomAlert />
+          </NavThemeProvider>
+        </ActionSheetProvider>
+      </AuthProvider>
       {/* </ExampleProvider> */}
     </GestureHandlerRootView>
   );
@@ -63,6 +68,10 @@ export default function RootLayout() {
 
 const SCREEN_OPTIONS = {
   animation: 'ios_from_right', // for android
+} as const;
+
+const AUTH_OPTIONS = {
+  headerShown: false,
 } as const;
 
 const DRAWER_OPTIONS = {

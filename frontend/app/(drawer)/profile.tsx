@@ -10,6 +10,8 @@ import { Sheet } from '@/components/nativewindui/Sheet';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { useStore } from '@/store/store';
 import { COLORS } from '@/theme/colors';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 
 import { AppHeader } from '@/components/AppHeader';
 
@@ -31,6 +33,7 @@ export default function Profile() {
   const router = useRouter();
   const { colorScheme, setColorScheme, colors } = useColorScheme();
   const { wpm, setWpm } = useStore();
+  const { user } = useAuth();
 
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [localWpm, setLocalWpm] = React.useState(wpm);
@@ -48,6 +51,9 @@ export default function Profile() {
   const handleSliderChange = React.useCallback((val: number) => {
     setLocalWpm(Math.round(val));
   }, []);
+
+  const userName = user?.user_metadata?.username || user?.user_metadata?.full_name || 'Reader';
+  const userEmail = user?.email || 'No email provided';
 
   return (
     <>
@@ -80,10 +86,10 @@ export default function Profile() {
               </View>
             </View>
             <Text variant="title1" className="mb-1 mt-4 text-foreground">
-              Julian Thorne
+              {userName}
             </Text>
             <Text variant="body" className="text-muted-foreground">
-              j.thorne@performance.lab
+              {userEmail}
             </Text>
           </View>
 
@@ -198,7 +204,12 @@ export default function Profile() {
               </View>
             </View>
 
-            <Pressable className="mt-4 w-full rounded-lg border border-dashed border-destructive/30 py-6 active:bg-destructive/10 active:opacity-70">
+            <Pressable
+              onPress={async () => {
+                await supabase.auth.signOut();
+                router.replace('/(auth)/login');
+              }}
+              className="mt-4 w-full rounded-lg border border-dashed border-destructive/30 py-6 active:bg-destructive/10 active:opacity-70">
               <Text className="text-center text-[12px] font-medium uppercase tracking-widest text-destructive">
                 LOG OUT
               </Text>

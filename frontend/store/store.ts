@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { supabase } from '@/lib/supabase';
 
 export interface Book {
   id: string;
@@ -10,6 +11,12 @@ export interface Book {
   type: 'document' | 'article' | 'pasted';
   dateAdded: number;
   status?: 'processing' | 'ready' | 'error';
+}
+
+export interface AlertButton {
+  text: string;
+  onPress?: () => void;
+  style?: 'cancel' | 'default' | 'destructive';
 }
 
 export interface AppState {
@@ -25,11 +32,33 @@ export interface AppState {
   increasePopulation: () => void;
   removeAllBears: () => void;
   updateBears: (newBears: number) => void;
+  
+  // Custom Alert State
+  isAlertVisible: boolean;
+  alertTitle: string;
+  alertMessage?: string;
+  alertButtons?: AlertButton[];
+  showAlert: (title: string, message?: string, buttons?: AlertButton[]) => void;
+  hideAlert: () => void;
 }
 
 export const useStore = create<AppState>((set) => ({
   wpm: 400,
-  setWpm: (wpm) => set({ wpm }),
+  setWpm: async (wpm) => {
+    set({ wpm });
+    
+    // Sync with Supabase asynchronously without blocking UI
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase
+          .from('user_settings')
+          .upsert({ user_id: session.user.id, wpm: wpm }, { onConflict: 'user_id' });
+      }
+    } catch (error) {
+      console.error('Error syncing WPM to Supabase:', error);
+    }
+  },
   bookWpms: {},
   setBookWpm: (bookId, wpm) => set((state) => ({ bookWpms: { ...state.bookWpms, [bookId]: wpm } })),
   books: [],
@@ -46,4 +75,13 @@ export const useStore = create<AppState>((set) => ({
   increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
   removeAllBears: () => set({ bears: 0 }),
   updateBears: (newBears) => set({ bears: newBears }),
+
+  // Custom Alert Initial State
+  isAlertVisible: false,
+  alertTitle: '',
+  alertMessage: undefined,
+  alertButtons: [],
+  showAlert: (title, message, buttons) =>
+    set({ isAlertVisible: true, alertTitle: title, alertMessage: message, alertButtons: buttons || [{ text: 'OK' }] }),
+  hideAlert: () => set({ isAlertVisible: false }),
 }));
